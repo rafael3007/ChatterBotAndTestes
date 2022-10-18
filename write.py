@@ -39,17 +39,9 @@ def append_values(spreadsheet_id, range_name, value_input_option,
     try:
         service = build('sheets', 'v4', credentials=creds)
 
-        values = [
-            [
-                # Cell values ...
-                'F', 'B'
-            ],[
-                'vyuyu','fcytcyt'
-            ]
-            # Additional rows ...
-        ]
+        
         body = {
-            'values': values
+            'values': _values
         }
         result = service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id, range=range_name,
