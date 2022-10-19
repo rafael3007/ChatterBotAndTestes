@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os.path
+from unittest import result
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -9,14 +10,20 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 
-import google.auth
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
-SAMPLE_SPREADSHEET_ID = '11RP-aM_rNUKoz--WOqV-jMhexeB3YSWsAPtrYDsij0c'
-SAMPLE_RANGE_NAME = 'Página2!A2:C2'
+SAMPLE_SPREADSHEET_ID_PE = '1KJaz1qfn4HZDpGwZEIrD1EXdPPgXSg6esjbaprjSlkM'
+SAMPLE_RANGE_NAME = 'Colar A6!A2:G'
+
+
+## Variables of ambient
+RANGE_COLAR_A6 = "Colar A6!A2:G"
+RANGE_COLAR_C9 = "Colar C9!A2:G"
+
+
 
 def pegarDados(spreadsheet_id,range_name):
     creds = None
@@ -43,12 +50,12 @@ def pegarDados(spreadsheet_id,range_name):
             spreadsheetId=spreadsheet_id, range=range_name).execute()
         rows = result.get('values', [])
         print(f"{len(rows)} rows retrieved")
-        return result
+        return result["values"]
     except HttpError as error:
         print(f"An error occurred: {error}")
         return error
 
-def inserirDados(spreadsheet_id, range_name, value_input_option,_values):
+def inserirDados(spreadsheet_id, range_name,_values):
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -82,7 +89,7 @@ def inserirDados(spreadsheet_id, range_name, value_input_option,_values):
             # Additional ranges to update ...
         ]
         body = {
-            'valueInputOption': value_input_option,
+            'valueInputOption': "USER_ENTERED",
             'data': data
         }
         result = service.spreadsheets().values().batchUpdate(
@@ -93,15 +100,13 @@ def inserirDados(spreadsheet_id, range_name, value_input_option,_values):
         print(f"An error occurred: {error}")
         return error
 
-def getDadosRelatorioA6(DIA,PLACA):
+def getDadosRelatorioC9(DIA,PLACA):
     
     creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
+    
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
+    
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -116,10 +121,10 @@ def getDadosRelatorioA6(DIA,PLACA):
     try:
         service = build('sheets', 'v4', credentials=creds)
         data = []
-        # Call the Sheets API
+        
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                    range="Página1!A1:D").execute()
+        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID_PE,
+                                    range="Colar C9!A2:G").execute()
         values = result.get('values', [])
 
         if not values:
@@ -128,23 +133,117 @@ def getDadosRelatorioA6(DIA,PLACA):
         cont = 1
         for row in values:
             cont = cont + 1
-            # Print columns A and E, which correspond to indices 0 and 4.
-            
-            
+
             if(row[0] == DIA and row[1] == PLACA):
-
                 data.append(row)
-                #procurar o dia e retornar o indice da linha
-
-
-
-                #inserirDados(SAMPLE_SPREADSHEET_ID,'Página2!A'+str(cont)+":C"+str(cont), "USER_ENTERED",["Rafael",cont,"Sampaio"])
-        return data
-            
+        return data   
     except HttpError as err:
         print(err)
 
+
+def getDadosRelatorioA6(DIA,PLACA):
+    
+    creds = None
+    
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+
+    try:
+        service = build('sheets', 'v4', credentials=creds)
+        data = []
+        
+        sheet = service.spreadsheets()
+        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID_PE,
+                                    range="Colar A6!A2:G").execute()
+        values = result.get('values', [])
+
+        if not values:
+            print('No data found.')
+            return
+        cont = 1
+        for row in values:
+            cont = cont + 1
+
+            if(row[0] == DIA and row[1] == PLACA):
+                data.append(row)
+        return data   
+    except HttpError as err:
+        print(err)
+
+
 if __name__ == '__main__':
-    #getDadosRelatorioA6("16/10/2022","PKY1772")
-    #update_values("1onYLUGKteVoHdXDQfRGpp4TKDLTp9p3oROO9jsWyDKo","A1:C2", "USER_ENTERED",[['A', 'B'],['C', 'D']])
-    print("Test")
+
+    DATA_DE_ANALISE = "18/10/2022"
+
+
+    online = True
+    
+    index = 0
+    lista_de_placas = [["TESTANDO123"]]#pegarDados(SAMPLE_SPREADSHEET_ID_PE,"Listas!A2:A")
+    
+    while online:
+        
+        for placa in lista_de_placas:
+            
+            IGNICAO_LIGADA = "A"
+            SAIDA_DA_BASE = ""
+            IGNICAO_DESLIGADA = ""
+            OBS = ""
+            LOCAL = ""
+            MOTORISTA = ""
+            LISTA_DE_DATAS = []
+
+            #pegar dados dos relatóriso, tratar e inserir nas variaveis
+            DATA_A6 = getDadosRelatorioA6(DATA_DE_ANALISE,"QPX9I72")#str(placa[0])
+            IGNICAO_LIGADA = DATA_A6[0][2]
+
+            IGNICAO_DESLIGADA = DATA_A6[len(DATA_A6)][4]
+
+            driver = []
+            cont = 0
+            for data in DATA_A6:
+                if data[5] not in driver:
+                    cont = cont + 1
+                    driver.append(data[5])
+                    if len(DATA_A6) == cont :
+                        MOTORISTA+str(data)+"."
+                        
+                    if  len(DATA_A6) < cont:
+                        MOTORISTA+str(data)+"/"
+            
+
+            getDadosRelatorioC9(DATA_DE_ANALISE,"QPX9I72")#str(placa[0])
+
+            #abrir aba
+            DATAS = pegarDados(SAMPLE_SPREADSHEET_ID_PE,str(placa[0])+"!A1:A")
+            #LISTA_DE_DATAS = pegarDados(SAMPLE_SPREADSHEET_ID_PE,str(placa[0])+"!A2:A")
+            for data in DATAS:
+                LISTA_DE_DATAS = LISTA_DE_DATAS + data
+                
+    
+            #pesquisar o index da data analisada
+            index = LISTA_DE_DATAS.index(DATA_DE_ANALISE)+2
+            
+            NEW_RANGE = str(placa[0])+"!B"+str(index)+":G"+str(index)
+            print({
+                IGNICAO_LIGADA,
+                SAIDA_DA_BASE,
+                IGNICAO_DESLIGADA,
+                OBS,
+                LOCAL,
+                MOTORISTA, 
+            })
+            #inserirDados(SAMPLE_SPREADSHEET_ID_PE,NEW_RANGE,[IGNICAO_LIGADA,SAIDA_DA_BASE,IGNICAO_DESLIGADA,OBS,LOCAL,MOTORISTA])
+
+        online = False
