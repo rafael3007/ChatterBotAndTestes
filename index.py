@@ -1,4 +1,5 @@
 from __future__ import print_function
+from msilib.schema import Error
 
 import os.path
 from unittest import result
@@ -48,8 +49,8 @@ def pegarDados(spreadsheet_id,range_name):
 
         result = service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id, range=range_name).execute()
-        rows = result.get('values', [])
-        print(f"{len(rows)} rows retrieved")
+        #rows = result.get('values', [])
+        #print(f"{len(rows)} rows retrieved")
         return result["values"]
     except HttpError as error:
         print(f"An error occurred: {error}")
@@ -94,7 +95,7 @@ def inserirDados(spreadsheet_id, range_name,_values):
         }
         result = service.spreadsheets().values().batchUpdate(
             spreadsheetId=spreadsheet_id, body=body).execute()
-        print(f"{(result.get('totalUpdatedCells'))} cells updated.")
+        #print(f"{(result.get('totalUpdatedCells'))} cells updated.")
         return result
     except HttpError as error:
         print(f"An error occurred: {error}")
@@ -124,7 +125,7 @@ def getDadosRelatorioC9(DIA,PLACA):
         
         sheet = service.spreadsheets()
         result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID_PE,
-                                    range="Colar C9!A2:G").execute()
+                                    range=RANGE_COLAR_C9).execute()
         values = result.get('values', [])
 
         if not values:
@@ -133,13 +134,14 @@ def getDadosRelatorioC9(DIA,PLACA):
         cont = 1
         for row in values:
             cont = cont + 1
-
-            if(row[0] == DIA and row[1] == PLACA):
+            DATA_TEMP = row[3].split(" ")[0]
+            HORA_TEMP = row[3].split(" ")[1]
+            
+            if(DATA_TEMP == DIA and HORA_TEMP != "00:00:00" and row[1] == PLACA):
                 data.append(row)
         return data   
     except HttpError as err:
         print(err)
-
 
 def getDadosRelatorioA6(DIA,PLACA):
     
@@ -165,7 +167,7 @@ def getDadosRelatorioA6(DIA,PLACA):
         
         sheet = service.spreadsheets()
         result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID_PE,
-                                    range="Colar A6!A2:G").execute()
+                                    range=RANGE_COLAR_A6).execute()
         values = result.get('values', [])
 
         if not values:
@@ -182,15 +184,15 @@ def getDadosRelatorioA6(DIA,PLACA):
         print(err)
 
 
+
 if __name__ == '__main__':
 
-    DATA_DE_ANALISE = "18/10/2022"
-
+    DATA_DE_ANALISE = "19/10/2022"
 
     online = True
     
     index = 0
-    lista_de_placas = [["TESTANDO123"]]#pegarDados(SAMPLE_SPREADSHEET_ID_PE,"Listas!A2:A")
+    lista_de_placas = pegarDados(SAMPLE_SPREADSHEET_ID_PE,"Listas!A2:A")
     
     while online:
         
@@ -204,46 +206,76 @@ if __name__ == '__main__':
             MOTORISTA = ""
             LISTA_DE_DATAS = []
 
+            print(str(placa[0]))
+
             #pegar dados dos relatóriso, tratar e inserir nas variaveis
-            DATA_A6 = getDadosRelatorioA6(DATA_DE_ANALISE,"QPX9I72")#str(placa[0])
-            IGNICAO_LIGADA = DATA_A6[0][2]
-
-            IGNICAO_DESLIGADA = DATA_A6[len(DATA_A6)][4]
-
-            driver = []
-            cont = 0
-            for data in DATA_A6:
-                if data[5] not in driver:
-                    cont = cont + 1
-                    driver.append(data[5])
-                    if len(DATA_A6) == cont :
-                        MOTORISTA+str(data)+"."
-                        
-                    if  len(DATA_A6) < cont:
-                        MOTORISTA+str(data)+"/"
+            DATA_A6 = getDadosRelatorioA6(DATA_DE_ANALISE,str(placa[0]))
+            DATA_C9 = getDadosRelatorioC9(DATA_DE_ANALISE,str(placa[0]))
             
 
-            getDadosRelatorioC9(DATA_DE_ANALISE,"QPX9I72")#str(placa[0])
+            #print(DATA_A6)
+            if DATA_A6 != [] and DATA_C9 != []:
+                try:
+                    IGNICAO_LIGADA = DATA_A6[0][2]
+                    SAIDA_DA_BASE = DATA_C9[0][3].split(" ")[1]
+                    IGNICAO_DESLIGADA = DATA_A6[len(DATA_A6)-1][4]
+                    LOCAL = DATA_C9[0][0].split("_")[1]
+                    
+                    DRIVER = []
+                    contD = 0
+                    
+                    for data in DATA_A6:
+                        if data[5] not in DRIVER:
+                            DRIVER.append(data[5])
+                            
+                            
+                    for motorista in DRIVER:
+                        if len(DRIVER)-1 == contD :
+                            MOTORISTA = MOTORISTA+str(motorista)+"."
+                        else:
+                            MOTORISTA = MOTORISTA+str(motorista)+"/"      
+                        contD = contD + 1
 
-            #abrir aba
-            DATAS = pegarDados(SAMPLE_SPREADSHEET_ID_PE,str(placa[0])+"!A1:A")
-            #LISTA_DE_DATAS = pegarDados(SAMPLE_SPREADSHEET_ID_PE,str(placa[0])+"!A2:A")
-            for data in DATAS:
-                LISTA_DE_DATAS = LISTA_DE_DATAS + data
+                    
+
                 
-    
-            #pesquisar o index da data analisada
-            index = LISTA_DE_DATAS.index(DATA_DE_ANALISE)+2
-            
-            NEW_RANGE = str(placa[0])+"!B"+str(index)+":G"+str(index)
-            print({
-                IGNICAO_LIGADA,
-                SAIDA_DA_BASE,
-                IGNICAO_DESLIGADA,
-                OBS,
-                LOCAL,
-                MOTORISTA, 
-            })
+
+
+                    #getDadosRelatorioC9(DATA_DE_ANALISE,"QPX9I72")#str(placa[0])
+
+                    #abrir aba
+                    DATAS = pegarDados(SAMPLE_SPREADSHEET_ID_PE,str(placa[0])+"!A1:A")
+
+                    #LISTA_DE_DATAS = pegarDados(SAMPLE_SPREADSHEET_ID_PE,str(placa[0])+"!A2:A")
+                    for data in DATAS:
+                        LISTA_DE_DATAS = LISTA_DE_DATAS + data
+                        
+
+
+                    #pesquisar o index da data analisada
+                    index = LISTA_DE_DATAS.index(DATA_DE_ANALISE)+2
+
+                    qtdLinhas = len(LISTA_DE_DATAS)
+                    
+                    NEW_RANGE = str(placa[0])+"!B"+str(index)+":G"+str(index)
+
+
+                    print(f"------------------------------------PLACA {placa[0]}--------------------------------------")
+                    print(f'Ignição ligada: {IGNICAO_LIGADA}')
+                    print(f'Saída da base: {SAIDA_DA_BASE}')
+                    print(f'Ignição desligada: {IGNICAO_DESLIGADA}')
+                    print(f'OBS: {OBS}')
+                    print(f'Local: {LOCAL}')
+                    print(f'Motorista: {MOTORISTA}')
+
+                except:
+                    
+                    print("ERRO404")
+
+            else:
+                print(f"------------------------------------PLACA {placa[0]}--------------------------------------")
+                print("Dados vazios")
+
             #inserirDados(SAMPLE_SPREADSHEET_ID_PE,NEW_RANGE,[IGNICAO_LIGADA,SAIDA_DA_BASE,IGNICAO_DESLIGADA,OBS,LOCAL,MOTORISTA])
 
         online = False
