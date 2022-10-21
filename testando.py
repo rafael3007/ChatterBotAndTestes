@@ -34,7 +34,6 @@ for arquivo in listdir():
         EXCEPTION = ''
 
 
-
 DATA = pd.read_excel(ARQUIVO)
 
 print(DATA.values)

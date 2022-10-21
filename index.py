@@ -1,15 +1,13 @@
 from __future__ import print_function
-from msilib.schema import Error
 
+import time
 import os.path
-from unittest import result
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-
 
 
 # If modifying these scopes, delete the file token.json.
@@ -187,8 +185,9 @@ def getDadosRelatorioA6(DIA,PLACA):
 
 if __name__ == '__main__':
 
-    DATA_DE_ANALISE = "19/10/2022"
+    DATA_DE_ANALISE = "25/10/2022"
 
+    OVER_REQ = 0
     online = True
     
     index = 0
@@ -198,7 +197,12 @@ if __name__ == '__main__':
         
         for placa in lista_de_placas:
             
-            IGNICAO_LIGADA = "A"
+            if OVER_REQ == 25:
+                time.sleep(10)
+                OVER_REQ = 0
+            else:
+                OVER_REQ = OVER_REQ + 1
+            IGNICAO_LIGADA = ""
             SAIDA_DA_BASE = ""
             IGNICAO_DESLIGADA = ""
             OBS = ""
@@ -231,16 +235,12 @@ if __name__ == '__main__':
                             
                     for motorista in DRIVER:
                         if len(DRIVER)-1 == contD :
-                            MOTORISTA = MOTORISTA+str(motorista)+"."
+                            MOTORISTA = MOTORISTA+str(motorista)
                         else:
                             MOTORISTA = MOTORISTA+str(motorista)+"/"      
                         contD = contD + 1
 
                     
-
-                
-
-
                     #getDadosRelatorioC9(DATA_DE_ANALISE,"QPX9I72")#str(placa[0])
 
                     #abrir aba
