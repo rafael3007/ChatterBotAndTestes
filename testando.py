@@ -1,32 +1,40 @@
 from os import chdir, getcwd, listdir
 import zipfile
-import openpyxl
+import pandas as pd
+from IPython.display import display
 
 #cam = input('Digite o caminho: ')
 CAMINHO = 'C:/Users/ECOELETRICA/Downloads'
 chdir(CAMINHO)
 print(getcwd())
+EXCEPTION = ''
 
 for c in listdir():
     try:
         if c.split(".")[1] == 'zip':
             if c.split("_")[0] == "TESTANDO":
-                print(c)
                 z = zipfile.ZipFile(c,'r')
                 z.extractall('C:/Users/ECOELETRICA/Desktop')
                 z.close()
-    except:
-       print('Erro na extração')
+                break
+    except Exception:
+        EXCEPTION = ''
 
-CAMINHO = 'C:/Users/ECOELETRICA/Downloads'
+CAMINHO = 'C:/Users/ECOELETRICA/Desktop'
 chdir(CAMINHO)
+print(getcwd())
 
+ARQUIVO = ''
 for arquivo in listdir():
     try:
-        if arquivo.split(".")[1] == 'xlsx':
-            DATA = openpyxl.load_workbook(filename=CAMINHO+"/"+arquivo)
-            for sheet in DATA.sheetnames:
-                for d in DATA[sheet].iter_rows(values_only=True):
-                    print(d)
-    except:
-        print("erro na leitura do excell")
+        if arquivo == 'Testando.xlsx':
+            ARQUIVO = arquivo
+            
+    except Exception:
+        EXCEPTION = ''
+
+
+
+DATA = pd.read_excel(ARQUIVO)
+
+print(DATA.values)
