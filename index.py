@@ -187,7 +187,7 @@ if __name__ == '__main__':
 
     DATA_DE_ANALISE = "25/10/2022"
 
-    OVER_REQ = 0
+    CONT_REQ = 0
     online = True
     
     index = 0
@@ -197,11 +197,11 @@ if __name__ == '__main__':
         
         for placa in lista_de_placas:
             
-            if OVER_REQ == 25:
+            if CONT_REQ == 25:
                 time.sleep(10)
-                OVER_REQ = 0
+                CONT_REQ = 0
             else:
-                OVER_REQ = OVER_REQ + 1
+                CONT_REQ = CONT_REQ + 1
             IGNICAO_LIGADA = ""
             SAIDA_DA_BASE = ""
             IGNICAO_DESLIGADA = ""
@@ -240,7 +240,6 @@ if __name__ == '__main__':
                             MOTORISTA = MOTORISTA+str(motorista)+"/"      
                         contD = contD + 1
 
-                    
                     #getDadosRelatorioC9(DATA_DE_ANALISE,"QPX9I72")#str(placa[0])
 
                     #abrir aba

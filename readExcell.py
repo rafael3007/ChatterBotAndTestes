@@ -1,20 +1,13 @@
-import pandas as pd
-from IPython.display import display
+from datetime import date, timedelta,datetime
 
-DATA = pd.read_excel('testando.xlsx')
-TIPOS_DE_DADOS = pd.DataFrame(DATA.dtypes, columns = ["Tipos de Dados"])
+# Pega o dia atual
+today_date = date.today()
+# -35 dias 
+td = timedelta(-35)
 
-TIPOS_DE_DADOS.columns.name = 'Variaveis'
-# numLinhas 
+data_resultante = today_date + td
 
-DATA.shape[0]
+data_em_texto = '{}/{}/{}'.format(data_resultante.day, data_resultante.month,
+data_resultante.year)
 
-#numColumns
-DATA.shape[1]
-
-
-vetor = DATA.values
-
-
-#print('A base de dados apresenta {} registros (imóveis) e {} variávies'.format(DATA.shape[0], DATA.shape[1]))
-print(vetor)
+print(data_em_texto)
