@@ -226,7 +226,7 @@ if __name__ == '__main__':
                     IGNICAO_DESLIGADA = DATA_A6[len(DATA_A6)-1][4]
                     LOCAL = DATA_C9[0][0].split("_")[1]
 
-                    if LOCAL == "RAULLINS":
+                    if LOCAL == "RAULLINS" or "SANTAMARIA":
                         LOCAL = "PETROLINA"
                     elif LOCAL == "NORTE":
                         OBS = "Evasão Norte"
@@ -236,9 +236,7 @@ if __name__ == '__main__':
                         LOCAL = "Petrolina"
                     elif LOCAL == "BOMNOME":
                         LOCAL == "SERRA TALHADA"
-                    elif LOCAL == "SANTAMARIA":
-                        LOCAL == "PETROLINA"
-                        
+
                     DRIVER = []
                     contD = 0
 
