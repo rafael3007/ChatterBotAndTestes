@@ -185,7 +185,7 @@ def getDadosRelatorioA6(DIA,PLACA):
 
 if __name__ == '__main__':
 
-    DATA_DE_ANALISE = "25/10/2022"
+    DATA_DE_ANALISE = "24/10/2022"
 
     CONT_REQ = 0
     online = True
