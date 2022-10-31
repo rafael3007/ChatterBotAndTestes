@@ -4,6 +4,54 @@ import pandas as pd
 #from IPython.display import display
 from datetime import date, timedelta
 
+from ast import If
+
+import time
+import os.path
+
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+# If modifying these scopes, delete the file token.json.
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
+SAMPLE_SPREADSHEET_ID_CONTROLE_GPM_TEST = '1fYCntz2rXMj4782Dy805XENPk4VKlgZu2ioE8XO27oI'
+
+
+
+def pegarDados(spreadsheet_id, range_name):
+    creds = None
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+    try:
+        service = build('sheets', 'v4', credentials=creds)
+
+        result = service.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id, range=range_name).execute()
+        #rows = result.get('values', [])
+        #print(f"{len(rows)} rows retrieved")
+        return result["values"]
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return error
+
 
 def inserirDados(spreadsheet_id, range_name,_values):
     creds = None
@@ -51,9 +99,10 @@ def inserirDados(spreadsheet_id, range_name,_values):
         return error
 
 
+
 td = timedelta(-1)
 USUARIO = "RAFAEL.SAMPAIO"
-data_atual = date.today() + td
+data_atual = date.today()
 
 #cam = input('Digite o caminho: ')
 CAMINHO = 'C:/Users/ECOELETRICA/Downloads'
@@ -130,17 +179,38 @@ for arquivo in listdir():
     except:
         EXCEPTION = ''
 
+
+#pegar a ultima linha da aba de turno e concatenar no range
+chdir('C:/Users/ECOELETRICA/Desktop/python/Relatório/python_with_Gsheets')
+LAST_ROW_TURNO = len(pegarDados(SAMPLE_SPREADSHEET_ID_CONTROLE_GPM_TEST,"BASE DE TURNO!E2:E"))+1
+
+LAST_ROW_FATURAMENTO = len(pegarDados(SAMPLE_SPREADSHEET_ID_CONTROLE_GPM_TEST,"BASE FATURAMENTO!E2:E"))+1
+
+LAST_ROW_SERVICOS = len(pegarDados(SAMPLE_SPREADSHEET_ID_CONTROLE_GPM_TEST,"BASE SERVIÇOS!A2:A"))+1
+
+
+
 print("-------------------------------------------")
 print("DATABASE: FATURAMENTO")
-print(len(DATABASE_FATURAMENTO))
+print(len(DATABASE_FATURAMENTO[0]))
+temp = LAST_ROW_FATURAMENTO + len(DATABASE_FATURAMENTO)
+RANGE_BASE_FATURAMENTO = "BASE FATURAMENTO!E"+str(LAST_ROW_FATURAMENTO+1)+":W"+str(temp)
+inserirDados(SAMPLE_SPREADSHEET_ID_CONTROLE_GPM_TEST,RANGE_BASE_FATURAMENTO,DATABASE_FATURAMENTO)
+print(RANGE_BASE_FATURAMENTO)
 print("-------------------------------------------")
 
 print("-------------------------------------------")
 print("DATABASE: SERVICO")
-print(len(DATABASE_SERVICOS))
+print(len(DATABASE_SERVICOS[0]))
+temp = LAST_ROW_SERVICOS + len(DATABASE_SERVICOS)
+RANGE_BASE_SERVICO = "BASE SERVICO!E"+str(LAST_ROW_SERVICOS+1)+":BX"+str(temp)
+print(RANGE_BASE_SERVICO)
 print("-------------------------------------------")
 
 print("-------------------------------------------")
 print("DATABASE: TURNO")
-print(len(DATABASE_TURNO))
+print(len(DATABASE_TURNO[0]))
+temp = LAST_ROW_TURNO + len(DATABASE_TURNO)
+RANGE_BASE_DE_TURNO = "BASE DE TURNO!E"+str(LAST_ROW_TURNO+1)+":BQ"+str(temp)
+print(RANGE_BASE_DE_TURNO)
 print("-------------------------------------------")
