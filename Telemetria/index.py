@@ -185,25 +185,37 @@ def getDadosRelatorioA6(DIA, PLACA):
         print(err)
 
 
-if __name__ == '__main__':
 
-    DATA_DE_ANALISE = "24/10/2022"
+if __name__ == '__main__':
+    tempoInicial = time.time()
+    DATA_DE_ANALISE = "17/11/2022"
 
     CONT_REQ = 0
     online = True
 
+    
+
     index = 0
     lista_de_placas = pegarDados(SAMPLE_SPREADSHEET_ID_PE, "Listas!A2:A")
-
-    while online:
-
+    while online:    
         for placa in lista_de_placas:
+            
+            time_after = time.time()
+            PARADO = round(time_after - tempoInicial,2) > 50.00
 
-            if CONT_REQ == 25:
-                time.sleep(10)
+            if CONT_REQ == 24 or PARADO:
+                print("parada iniciada"+str(round(time_after - tempoInicial,2)))
+                PARADO = True 
+                while PARADO:
+                    PARADO = round(time.time() - time_after,2) < 21.00
                 CONT_REQ = 0
+                print("parada acabou"+str(round(time_after - tempoInicial,2)))
+                tempoInicial = time.time()
             else:
                 CONT_REQ = CONT_REQ + 1
+
+
+
             IGNICAO_LIGADA = ""
             SAIDA_DA_BASE = ""
             IGNICAO_DESLIGADA = ""
@@ -217,7 +229,7 @@ if __name__ == '__main__':
             # pegar dados dos relatóriso, tratar e inserir nas variaveis
             DATA_A6 = getDadosRelatorioA6(DATA_DE_ANALISE, str(placa[0]))
             DATA_C9 = getDadosRelatorioC9(DATA_DE_ANALISE, str(placa[0]))
-
+            print("Tempo>>"+str(round(time_after - tempoInicial,2)))
             # print(DATA_A6)
             if DATA_A6 != [] and DATA_C9 != []:
                 try:
@@ -268,8 +280,7 @@ if __name__ == '__main__':
 
                     NEW_RANGE = str(placa[0])+"!B"+str(index)+":G"+str(index)
 
-                    print(
-                        f"------------------------------------PLACA {placa[0]}--------------------------------------")
+                    print(f"------------------------------------PLACA {placa[0]}--------------------------------------")
                     print(f'Ignição ligada: {IGNICAO_LIGADA}')
                     print(f'Saída da base: {SAIDA_DA_BASE}')
                     print(f'Ignição desligada: {IGNICAO_DESLIGADA}')
@@ -277,14 +288,14 @@ if __name__ == '__main__':
                     print(f'Local: {LOCAL}')
                     print(f'Motorista: {MOTORISTA}')
 
+                
                 except:
-
                     print("ERRO404")
-
             else:
-                print(
-                    f"------------------------------------PLACA {placa[0]}--------------------------------------")
+                print(f"------------------------------------PLACA {placa[0]}--------------------------------------")
                 print("Dados vazios")
+
+
 
             # inserirDados(SAMPLE_SPREADSHEET_ID_PE,NEW_RANGE,[IGNICAO_LIGADA,SAIDA_DA_BASE,IGNICAO_DESLIGADA,OBS,LOCAL,MOTORISTA])
 
